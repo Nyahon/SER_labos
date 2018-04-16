@@ -1,0 +1,339 @@
+\documentclass[a4paper]{article} %format de la feuille + type de document https://en.wikibooks.org/wiki/LaTeX/Document_Structure#Document_classes
+%packages nécessaire pour nos besoins
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english,french]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb,amsfonts,textcomp}
+\usepackage{color}
+\usepackage{array}
+\usepackage{hhline}
+\usepackage{hyperref}
+\usepackage[pdftex]{graphicx}
+\usepackage{sectsty}
+\usepackage{tcolorbox}
+\usepackage{textcomp}
+\usepackage{courier}
+\usepackage[font={small,it}]{caption}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{qtree}
+\usepackage{caption}
+\usepackage{lscape}
+\usepackage{tabularx}
+\usepackage{multirow}% http://ctan.org/pkg/multirow
+\usepackage{tikz}
+\usepackage[top=15mm,bottom=20mm,right=25mm,left=25mm]{geometry} 
+\usepackage[export]{adjustbox}
+\usetikzlibrary{arrows,positioning,automata,shadows,fit,shapes}
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+%Définition des couleurs
+\definecolor{amethyst}{rgb}{0.6, 0.4, 0.8}
+\definecolor{havelockBlue}{rgb}{0.004, 0.42, 0.73}
+\definecolor{Monokaimagenta}{rgb}{0.86,0.08,0.24}
+
+%utilisation de la couleur définie avant
+%toutes les sections auront cette couleur
+\sectionfont{\color{amethyst}}
+%\subsectionfont{\color{havelockBlue}}
+%début du document
+\begin{document}
+
+\renewcommand{\labelitemi}{$\bullet$}
+\renewcommand{\labelitemii}{$\cdot$}
+\renewcommand{\labelitemiii}{$\diamond$}
+\renewcommand{\labelitemiv}{$\ast$}
+
+%début d'un titre
+\begin{titlepage}
+            %centre les éléments
+	\centering
+	
+	{\scshape\LARGE \color{amethyst} SER: Laboratoire \#2 \\  \par}
+	
+	%espace vertical de 1 mms
+	\vspace{1cm}
+	
+	{\Large\itshape Johanna Melly \& Yohann Meyer\par}
+	
+	%http://www.personal.ceu.hu/tex/spacebox.htm
+	\vfill
+	Professeur\par
+	%met le texte en gras 
+	\textbf{Eric Lefrançois} \par% ajoute une ligne 
+	\vspace{1cm}
+	
+	\vfill
+
+            %affiche la dathhggbbe actuelle
+	{\large \today\par}
+	
+%fin de la page de titre
+\end{titlepage}
+
+\tableofcontents
+\pagebreak
+\section{Introduction}
+L'objectif de ce laboratoire était de générer des fichiers XML et JSON à partir d'objets Java. Nous avions à disposition, pour nous faciliter la tâche, la librairie JDOM (pour l'XML) et la librairie GSON (pour le JSON). Pour le document JSON, nous avons dû reconstruire intégralement la structure du document. Pour le JSON, la génération du document se fait simplement en lui passant un objet, nous avons donc dû construire cet objet correctement.
+\section{Choix de structure}
+Nous avons pu garder la structure XML que nous avions choisie au premier laboratoire, car elle était implémentable sans trop de difficulté avec la structure des objets mise à disposition dans le projet Java fourni.
+\subsection{XML}
+Pour la génération du XML, nous avons simplement itéré sur les projections, puis créé ses éléments enfants. Pour chaque élément enfant, nous avons, si nécessaire, répété l'opération. Nous avons ajouté des tests là où les champs n'étaient pas obligatoires, afin d'éviter des nullPointerExceptions.
+\subsection{JSON}
+Pour la génération du fichier JSON, nous ne pouvions pas simplement appliquer la fonction toJson() sur la liste complète des projections, car nous devions présenter une partie seulement des informations des projections. Ainsi, nous avons créé trois nouvelles classes, une pour chaque objet qui comprend des éléments enfants. Ainsi, nous avons créé:
+\begin{itemize}
+	\item{Acteurs\_simplifies} qui possède uniquement des champs pour les deux premiers rôles
+	\item{Film\_simplifies} qui possède des acteurs simplifiés, mais aussi un titre
+	\item{Projections\_simplifiees} qui possède un film simplifié, mais aussi un id et une date
+\end{itemize}
+
+Nous avons ensuite, dans le controleurMedia, créé une liste de projections simplifiées, dont chaque projection simplifiée est construite à partir des véritables projections.
+\section{Conclusion}
+ 
+Dans ce laboratoire, nous avons pu apprendre à utiliser les librairies JDOM et GSON qui sont très pratiques pour générer les fichiers correspondants de manière rapide et efficace. La création du fichier XML était un peu fastidieuse car il y avait beaucoup d'éléments différents, qu'il était un peu long de chercher les champs dont les valeurs risquaient d'être nulles et que nous devions tester, et parce qu'il fallait être attentif à ajouter tous chaque élément fils à son parent et à la racine. La génération du fichier JSON était plus rapide, car il suffit de passer un objet à la fonction toJson() de l'objet Gson. Ce laboratoire était donc un peu long mais pas d'une grande difficulté, mais nous a appris à utiliser des outils qui nous seront utiles.
+\pagebreak
+\section{Code XML}
+\begin{lstlisting}
+	public void createXML(){
+		new Thread(){
+			public void run(){
+				mainGUI.setAcknoledgeMessage("Creation XML... WAIT");
+				long currentTime = System.currentTimeMillis();
+				try {
+					globalData = ormAccess.GET_GLOBAL_DATA();
+
+					mainGUI.setWarningMessage("Creation XML: WAITING...");
+
+					// Reucperation des projections
+					List<Projection> projections = globalData.getProjections();
+					// Creation de l'element racine
+					Element projectionsElements = new Element("Projections");
+					// Creation du document XML avec Projections comme racine
+					Document plex_doc = new Document(projectionsElements);
+
+
+					for(Projection projection : projections){ // Parcours des projections
+
+						Element projectionElement = new Element("Projection");
+						projectionElement.setAttribute("Id", "projection" + String.valueOf(projection.getId()));
+
+						// ---------------------- FILM ------------------------
+						Film film = projection.getFilm();
+						Element filmElement = new Element("Film");
+						filmElement.setAttribute("Id", String.valueOf(film.getId()));
+						// Ajout des elements qui composent un film
+						filmElement.addContent(new Element("titre").setText(film.getTitre()));
+						filmElement.addContent(new Element("duree").setText(String.valueOf(film.getDuree())));
+						if(film.getPhoto()!=null)
+							filmElement.addContent(new Element("photo").setAttribute("url", film.getPhoto()));
+						filmElement.addContent(new Element("synopsis").setText(film.getSynopsis()));
+
+						// -----------------------	ELEMENT ROLES ------------------------
+						Set<RoleActeur> roles = film.getRoles();
+
+						for(RoleActeur role : roles){
+							//++roleNumber;
+							Element roleElement = new Element("Role");
+							roleElement.setAttribute("Id", String.valueOf(role.getId()));
+
+							// ---------------------- ELEMENT ACTEUR -----------------------
+							Acteur acteur = role.getActeur();
+							Element acteurElement = new Element("Acteur");
+							acteurElement.setAttribute("Id", "acteur"+String.valueOf(acteur.getId()));
+							acteurElement.setAttribute("sexe", String.valueOf(acteur.getSexe()));
+							// Ajout des elements qui composent un acteur
+							acteurElement.addContent(new Element("nom").setText(acteur.getNom()));
+							if(acteur.getDateDeces() != null){
+								String deces = String.valueOf(acteur.getDateDeces().get(Calendar.DAY_OF_MONTH)) + "/" +
+										acteur.getDateDeces().get(Calendar.MONTH) + "/" +
+										acteur.getDateDeces().get(Calendar.YEAR);
+								acteurElement.addContent(new Element("dateDeces").setText(deces));
+							}
+
+							if(acteur.getDateNaissance()!=null){
+								String naissance = String.valueOf(acteur.getDateNaissance().get(Calendar.DAY_OF_MONTH)) + "/" +
+										acteur.getDateNaissance().get(Calendar.MONTH) + "/" +
+										acteur.getDateNaissance().get(Calendar.YEAR);
+								acteurElement.addContent(new Element("dateNaissance").setText(naissance));
+							}
+
+							if(acteur.getNomNaissance()!=null)
+								acteurElement.addContent(new Element("nomNaissance").setText(acteur.getNomNaissance()));
+							if(acteur.getBiographie()!=null)
+								acteurElement.addContent(new Element("biographie").setText(acteur.getBiographie()));
+
+							roleElement.addContent(acteurElement);
+							roleElement.addContent(new Element("place").setText(String.valueOf(role.getPlace())));
+							roleElement.addContent(new Element("personnage").setText(role.getPersonnage()));
+
+							filmElement.addContent(roleElement);
+
+						}
+
+						// -------------------- ELEMENT MOTCLE ------------------------
+						Set<Motcle> motscles = film.getMotcles();
+
+						for(Motcle motcle : motscles){
+							Element motcleElement = new Element("Motcle");
+							motcleElement.setAttribute("Id", String.valueOf(motcle.getId()));
+							motcleElement.addContent(new Element("label").setText(motcle.getLabel()));
+
+							filmElement.addContent(motcleElement);
+						}
+
+
+						// ---------------------- ELEMENT LANGAGE -----------------------
+
+						Set<Langage> langages = film.getLangages();
+
+						for(Langage langage : langages){
+							Element langageElement = new Element("Langage");
+							langageElement.setAttribute("Id", String.valueOf(langage.getId()));
+							langageElement.addContent(new Element("Label").setText(langage.getLabel()));
+
+							filmElement.addContent(langageElement);
+						}
+
+						// ------------------------ ELEMENT CRITIQUE ---------------------
+
+						Set<Critique> critiques = film.getCritiques();
+
+						if(critiques.size()!=0){
+							for(Critique critique : critiques){
+								Element critiqueElement = new Element("Critique");
+								critiqueElement.setAttribute("Id", String.valueOf(critique.getId()));
+								critiqueElement.setAttribute("Note", String.valueOf(critique.getNote()));
+								critiqueElement.addContent(new Element("texte").setText(critique.getTexte()));
+
+								filmElement.addContent(critiqueElement);
+							}
+						}
+
+
+
+						// ----------------------- ELEMENT GENRE -----------------------
+
+						Set<Genre> genres = film.getGenres();
+
+						for(Genre genre : genres){
+							Element genreElement = new Element("Genre");
+							genreElement.setAttribute("Id", String.valueOf(genre.getId()));
+							genreElement.addContent(new Element("Label").setText(genre.getLabel()));
+
+							filmElement.addContent(genreElement);
+
+						}
+
+						projectionElement.addContent(filmElement);
+
+						// ----------------------- ELEMENT SALLE -----------------------
+
+						Salle salle = projection.getSalle();
+						Element salleElement = new Element("Salle");
+						salleElement.setAttribute("Id", String.valueOf(salle.getId()));
+						salleElement.addContent(new Element("numero").setText(salle.getNo()));
+						salleElement.addContent(new Element("taille").setText(String.valueOf(salle.getTaille())));
+
+						projectionElement.addContent(salleElement);
+
+
+
+						// ----------------------- ELEMENT DATE -----------------------
+
+						Calendar dateHeure = projection.getDateHeure();
+						Element dateElement = new Element("Date");
+
+
+						dateElement.addContent(new Element("jour").setText(String.valueOf(dateHeure.get(Calendar.DAY_OF_MONTH))));
+						dateElement.addContent(new Element("mois").setText(String.valueOf(dateHeure.get(Calendar.MONTH))));
+						dateElement.addContent(new Element("annee").setText(String.valueOf(dateHeure.get(Calendar.YEAR))));
+
+						projectionElement.addContent(dateElement);
+
+						projectionsElements.addContent(projectionElement);
+					}
+					XMLOutputter xmlOutput = new XMLOutputter();
+
+
+					xmlOutput.setFormat(Format.getPrettyFormat());
+					// Ecriture dans un fichier
+					xmlOutput.output(plex_doc, new FileWriter("./Projections.XML"));
+
+
+
+					mainGUI.setAcknoledgeMessage("Creation XML... DONE!");
+				}
+				catch (Exception e){
+					mainGUI.setErrorMessage("Construction XML impossible", e.toString());
+				}
+			}
+		}.start();
+	}
+\end{lstlisting}
+\section{Code JSON}
+\begin{lstlisting}
+		public void sendJSONToMedia(){
+		new Thread(){
+			public void run(){
+				mainGUI.setAcknoledgeMessage("Envoi JSON ... WAIT");
+				//long currentTime = System.currentTimeMillis();
+				try {
+					globalData = ormAccess.GET_GLOBAL_DATA();
+					// Creation d'un objet Gson formatee
+					Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+					// Creation d'une liste de projections simplifiees vide
+					List<Projections_simplifiees> projections = new ArrayList<>();
+					// Recuperation des projections completes
+					List<Projection> projectionsCompletes = globalData.getProjections();
+					for(Projection projectionComplete : projectionsCompletes){ // Parcours des projections completes
+						// Creation d'une projections simplifiee a partir de la projection complete
+						Projections_simplifiees projectionSimplifiee = new Projections_simplifiees(projectionComplete);
+						// Ajout de la projection simplifiee a la liste de projections simplifiees
+						projections.add(projectionSimplifiee);
+					}
+
+					Writer writer = new FileWriter("./Projections.json");
+
+					try{
+						// Ecriture dans un fichier
+						gson.toJson(projections, writer);
+						writer.flush();
+					}catch(Exception e ){
+						System.out.println(e.getMessage());
+					}
+
+					mainGUI.setAcknoledgeMessage("Envoi JSON: DONE");
+				}
+				catch (Exception e){
+					mainGUI.setErrorMessage("Construction JSON impossible", e.toString());
+				}
+			}
+		}.start();
+	}
+
+\end{lstlisting}
+\end{document}

@@ -31,20 +31,24 @@ public class ControleurMedia {
 				//long currentTime = System.currentTimeMillis();
 				try {
 					globalData = ormAccess.GET_GLOBAL_DATA();
+					// Creation d'un objet Gson formatee
 					Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
+					// Creation d'une liste de projections simplifiees vide
 					List<Projections_simplifiees> projections = new ArrayList<>();
-					List<Projection> proj = globalData.getProjections();
-					for(Projection p : proj){
-						Projections_simplifiees project = new Projections_simplifiees(p);
-						System.out.println(project.getFilm().getActeurs().getRole1());
-						projections.add(project);
+					// Recuperation des projections completes
+					List<Projection> projectionsCompletes = globalData.getProjections();
+					for(Projection projectionComplete : projectionsCompletes){ // Parcours des projections completes
+						// Creation d'une projections simplifiee a partir de la projection complete
+						Projections_simplifiees projectionSimplifiee = new Projections_simplifiees(projectionComplete);
+						// Ajout de la projection simplifiee a la liste de projections simplifiees
+						projections.add(projectionSimplifiee);
 					}
 
-					System.out.println(projections.size());
 					Writer writer = new FileWriter("./Projections.json");
 
 					try{
+						// Ecriture dans un fichier
 						gson.toJson(projections, writer);
 						writer.flush();
 					}catch(Exception e ){
