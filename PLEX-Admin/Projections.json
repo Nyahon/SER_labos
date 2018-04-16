@@ -1,0 +1,20 @@
+[
+  {
+    "id": 33752,
+    "dateHeure": {
+      "year": 2018,
+      "month": 3,
+      "dayOfMonth": 16,
+      "hourOfDay": 13,
+      "minute": 5,
+      "second": 7
+    },
+    "film": {
+      "Acteurs": {
+        "Role1": "Green, Eva",
+        "Role2": "Sinclair, Malcolm"
+      },
+      "Titre": "Casino Royale"
+    }
+  }
+]
