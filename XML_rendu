@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "Lol, beaucoup trop long.";
+echo "    -> voir Output_validation.txt"

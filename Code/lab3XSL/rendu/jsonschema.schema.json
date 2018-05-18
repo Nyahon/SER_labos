@@ -1,0 +1,45 @@
+{
+	"$schema" : "http://json-schema.org/schema#",
+	"type" : "array",
+	"properties" :
+	{
+		"id" :
+		{
+			"type" : "integer"
+		},
+		"dateHeure" :
+		{
+			"type" : "object",
+			"properties" :
+			{
+				"year" :       {"type":"integer"},
+				"month" :	   {"type":"integer"},
+				"dayOfMonth" : {"type":"integer"},
+				"hourOfDay" :  {"type":"integer"},
+				"minute" :	   {"type":"integer"},
+				"second" :	   {"type":"integer"}
+			}
+
+				},
+		"film":
+		{
+			"type": "object",
+			"properties":
+			{
+				"Acteurs":
+				{
+					"type":"object",
+					"properties":
+					{
+						"Role1":{"type":"string"},
+						"Role2":{"type":"string"}
+					}
+				},
+				"Titre": {"type":"string"}
+			}
+		}
+
+	}
+
+}
+
